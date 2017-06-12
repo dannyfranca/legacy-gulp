@@ -1,0 +1,38 @@
+{
+  "name": "legacy-gulp",
+  "version": "1.0.0",
+  "description": "Framework para produtividade no desenvolvimento web",
+  "main": "gulpfile.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Danny França",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dannyfranca/legacy-gulp.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.18.12",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.0.0",
+    "gulp-changed": "^3.1.0",
+    "gulp-concat-css": "^2.3.0",
+    "gulp-csso": "^3.0.0",
+    "gulp-ignore": "^2.0.2",
+    "gulp-image-resize": "^0.12.0",
+    "gulp-imagemin": "^3.1.1",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-real-favicon": "^0.2.2",
+    "gulp-rename": "^1.2.2",
+    "gulp-run-sequence": "^0.3.2",
+    "gulp-size": "^2.1.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-zip": "^4.0.0",
+    "pump": "^1.0.2"
+  },
+  "dependencies": {}
+}
