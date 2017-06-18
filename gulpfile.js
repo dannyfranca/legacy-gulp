@@ -7,7 +7,8 @@ var
         themeName = (config.themeName === '' ? config.projectName : config.themeName),
         dev = config.dev,
         legacyWatch = config.legacyWatch,
-        https = config.https;
+        https = config.https,
+        reloadFix = config.reloadFix;
 
 //GULP REQUIRES
 var
@@ -63,6 +64,19 @@ switch (systemName) {
                 jsDest = theme + 'build/';
         break;
 
+    case 'html':
+        var
+                root = '../' + systemName + '/' + projectName + '/',
+                theme = root,
+                src = theme + '_src/',
+                //DESTINATION FILES
+                images = theme + 'images/',
+                icons = theme + 'icons/',
+                cssDest = theme + 'css/',
+                jsDest = theme + 'js/',
+                themeName = projectName;
+        break;
+
 }
 
 //SOURCE FILES
@@ -74,8 +88,10 @@ var
         jsSrc = src + 'js/**/scripts.js',
         legacyCssSrc = '../legacy-framework/_src/css/*.css',
         legacyJsSrc = '../legacy-framework/_src/js/*.js',
+        legacyJsIntegrationsSrc = '../legacy-framework/_src/js/integrations/*.js',
         legacyCssDest = '../legacy-framework/',
         legacyJsDest = '../legacy-framework/';
+legacyJsIntegrationsDest = '../legacy-framework/scripts';
 
 // ////////////////////////////////////////////////
 // Browser-Sync Tasks
@@ -87,6 +103,7 @@ gulp.task('browser-sync', function () {
         browserSync.init({
             proxy: 'https://localhost/' + systemName + '/' + projectName,
 //            browser: 'C:\\Program Files\\Firefox Developer Edition\\firefox.exe',
+            online: false,
             https: {
                 key: "C:/xampp/apache/conf/ssl.key/server.key",
                 cert: "C:/xampp/apache/conf/ssl.crt/server.crt"
@@ -94,29 +111,38 @@ gulp.task('browser-sync', function () {
         });
     } else {
         browserSync.init({
-            proxy: 'localhost/' + systemName + '/' + projectName
+            proxy: 'localhost/' + systemName + '/' + projectName,
+//            browser: 'C:\\Program Files\\Firefox Developer Edition\\firefox.exe',
+            online: false
         });
     }
 
 });
-var reloadSwitch = 1;
-gulp.task('reload', function () {
-    if (reloadSwitch === 1) {
-        reloadSwitch = 0;
+
+if (reloadFix === 1) {
+    var reloadSwitch = 1;
+    gulp.task('reload', function () {
+        if (reloadSwitch === 1) {
+            reloadSwitch = 0;
+            browserSync.reload();
+            reloadTimer = setTimeout(function () {
+                reloadSwitch = 1;
+            }, 4000);
+        }
+    });
+} else {
+    gulp.task('reload', function () {
         browserSync.reload();
-        reloadTimer = setTimeout(function () {
-            reloadSwitch = 1;
-        }, 4000);
-    }
-});
+    });
+}
 
 // ////////////////////////////////////////////////
 // Styles Tasks
 // ///////////////////////////////////////////////
-function css(src, dist) {
+function css(src, dist, min) {
     gulp.src(src)
             .pipe(plugins.plumber())
-            .pipe(plugins.concatCss('style.min.css'))
+            .pipe(plugins.concatCss('style' + (min === true ? '.min' : '') + '.css'))
             .pipe(plugins.autoprefixer({
                 browsers: ['last 3 versions'],
                 cascade: false
@@ -131,17 +157,11 @@ gulp.task('css', function () {
     css(cssSrc, cssDest);
 });
 
-if (legacyWatch === 1) {
-    gulp.task('legacy-css', function () {
-        css(legacyCssSrc, legacyCssDest);
-    });
-}
-
 // ////////////////////////////////////////////////
 // JS Tasks
 // ///////////////////////////////////////////////
 
-function js(src, dist, cb) {
+function js(src, dist, cb, min) {
     if (dev === 1) {
         var options = {
             mangle: false,
@@ -153,7 +173,7 @@ function js(src, dist, cb) {
         gulp.src(src),
         plugins.plumber(),
         plugins.rename(function (path) {
-            path.basename += '.min';
+            path.basename += (min === true ? '.min' : '');
         }),
         plugins.changed(dist, {hasChanged: plugins.changed.compareLastModifiedTime}),
         plugins.sourcemaps.init({loadMaps: true}),
@@ -189,9 +209,20 @@ gulp.task('js', function (cb) {
     js(jsSrc, jsDest, cb);
 });
 
+// ////////////////////////////////////////////////
+// Legacy Framework Tasks
+// ///////////////////////////////////////////////
+
 if (legacyWatch === 1) {
+
+    gulp.task('legacy-css', function () {
+        css(legacyCssSrc, legacyCssDest, true);
+    });
     gulp.task('legacy-js', function (cb) {
-        js(legacyJsSrc, legacyJsDest, cb);
+        js(legacyJsSrc, legacyJsDest, cb, true);
+    });
+    gulp.task('legacy-js-integrations', function (cb) {
+        js(legacyJsIntegrationsSrc, legacyJsIntegrationsDest, cb, true);
     });
 }
 
@@ -202,7 +233,7 @@ if (legacyWatch === 1) {
 gulp.task('img-compress-images', function () {
     gulp.src(imgSrc)
             .pipe(plugins.plumber())
-            .pipe(plugins.changed(images, {hasChanged: changed.compareLastModifiedTime}))
+            .pipe(plugins.changed(images, {hasChanged: plugins.changed.compareLastModifiedTime}))
             .pipe(plugins.imagemin())
             .pipe(gulp.dest(images));
     browserSync.reload();
@@ -211,7 +242,7 @@ gulp.task('img-compress-images', function () {
 gulp.task('img-compress-icons', function () {
     gulp.src(imgSrcIcons)
             .pipe(plugins.plumber())
-            .pipe(plugins.changed(icons, {hasChanged: changed.compareLastModifiedTime}))
+            .pipe(plugins.changed(icons, {hasChanged: plugins.changed.compareLastModifiedTime}))
             .pipe(plugins.imagemin())
             .pipe(gulp.dest(icons));
     browserSync.reload();

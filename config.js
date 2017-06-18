@@ -2,12 +2,14 @@ module.exports = {
     systems: {
         wc: 'workcontrol',
         ap: 'activepages',
-        wp: 'wordpress'
+        wp: 'wordpress',
+        ht: 'html'
     },
-    systemName: 'wc',
+    systemName: '',
     projectName: '',
     themeName: '',
-    dev: 1,
+    dev: 0,
     https: 1,
-    legacyWatch: 0
+    reloadFix: 0,
+    legacyWatch: 1
 };
