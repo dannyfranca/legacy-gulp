@@ -11,5 +11,6 @@ module.exports = {
     dev: 0,
     https: 1,
     reloadFix: 0,
-    legacyWatch: 1
+    fwFolder: 'analyzify-framework',
+    fwWatch: 1
 };

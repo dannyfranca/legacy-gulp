@@ -6,7 +6,8 @@ var
         projectName = config.projectName,
         themeName = (config.themeName === '' ? config.projectName : config.themeName),
         dev = config.dev,
-        legacyWatch = config.legacyWatch,
+        fwFolder = config.fwFolder,
+        fwWatch = config.fwWatch,
         https = config.https,
         reloadFix = config.reloadFix;
 
@@ -86,12 +87,13 @@ var
         imgSrcBg = src + 'backgrounds/**/*.{jpg,jpeg,png,svg,gif}',
         cssSrc = src + 'css/**/*.css',
         jsSrc = src + 'js/**/scripts.js',
-        legacyCssSrc = '../legacy-framework/_src/css/*.css',
-        legacyJsSrc = '../legacy-framework/_src/js/*.js',
-        legacyJsIntegrationsSrc = '../legacy-framework/_src/js/integrations/*.js',
-        legacyCssDest = '../legacy-framework/',
-        legacyJsDest = '../legacy-framework/';
-legacyJsIntegrationsDest = '../legacy-framework/scripts';
+        fwRoot = '../' + fwFolder,
+        legacyCssSrc = fwRoot + '/_src/css/*.css',
+        legacyJsSrc = fwRoot + '/_src/js/*.js',
+        legacyJsIntegrationsSrc = fwRoot + '/_src/js/integrations/*.js',
+        legacyCssDest = fwRoot + '/',
+        legacyJsDest = fwRoot + '/',
+        legacyJsIntegrationsDest = fwRoot + '/scripts';
 
 // ////////////////////////////////////////////////
 // Browser-Sync Tasks
@@ -213,15 +215,15 @@ gulp.task('js', function (cb) {
 // Legacy Framework Tasks
 // ///////////////////////////////////////////////
 
-if (legacyWatch === 1) {
+if (fwWatch === 1) {
 
-    gulp.task('legacy-css', function () {
+    gulp.task('fw-css', function () {
         css(legacyCssSrc, legacyCssDest, true);
     });
-    gulp.task('legacy-js', function (cb) {
+    gulp.task('fw-js', function (cb) {
         js(legacyJsSrc, legacyJsDest, cb, true);
     });
-    gulp.task('legacy-js-integrations', function (cb) {
+    gulp.task('fw-js-integrations', function (cb) {
         js(legacyJsIntegrationsSrc, legacyJsIntegrationsDest, cb, true);
     });
 }
@@ -309,6 +311,20 @@ if (systemName !== 'activepages') {
 // Update Tasks
 // ////////////////////////////////////////////////
 
+gulp.task('fw-update', function () {
+    gulp.src([
+        fwRoot + '/script.min.js',
+        fwRoot + '/style.min.css'
+    ])
+            .pipe(plugins.plumber())
+            .pipe(plugins.changed(theme, {hasChanged: plugins.changed.compareLastModifiedTime}))
+            .pipe(gulp.dest(theme));
+    gulp.src(fwRoot + '/icons/*.{jpg,jpeg,png,svg,gif}')
+            .pipe(plugins.plumber())
+            .pipe(plugins.changed(theme, {hasChanged: plugins.changed.compareLastModifiedTime}))
+            .pipe(gulp.dest(theme));
+});
+
 gulp.task('wc-fullbackup', () =>
     gulp.src([
         root + '**/*',
@@ -342,9 +358,9 @@ function watch() {
     gulp.watch(src + 'images/*.{jpg,jpeg,png,svg,gif}', ['img-compress-images']);
     gulp.watch(src + 'icons/*.{jpg,jpeg,png,svg,gif}', ['img-compress-icons']);
     gulp.watch(src + 'backgrounds/*.{jpg,jpeg,png,svg,gif}', ['img-bg-gen']);
-    if (legacyWatch === 1) {
-        gulp.watch(legacyJsSrc, ['legacy-js']);
-        gulp.watch(legacyCssSrc, ['legacy-css']);
+    if (fwWatch === 1) {
+        gulp.watch(legacyJsSrc, ['fw-js']);
+        gulp.watch(legacyCssSrc, ['fw-css']);
     }
 }
 
